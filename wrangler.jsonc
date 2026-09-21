@@ -1,0 +1,14 @@
+{
+  "name": "kl-construction",
+  "compatibility_date": "2026-09-21",
+  "assets": {
+    "directory": "."
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kl-construction-db",
+      "database_id": "b5be6fab-e368-4c9e-a7ad-f861ed34d48f"
+    }
+  ]
+}
