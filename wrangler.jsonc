@@ -15,5 +15,12 @@
       "database_name": "kl-construction-db",
       "database_id": "b5be6fab-e368-4c9e-a7ad-f861ed34d48f"
     }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "kl-construction-media"
+    }
   ]
 }
