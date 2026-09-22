@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6227,6 +6228,60 @@ header.site-header .nav > *{
 }
 </style>
 
+
+<style id="v16-hero-service-navigation">
+/* V16 — Hero service category navigation */
+.hero-service-links{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:14px 30px;
+  margin:0 0 24px;
+  position:relative;
+  z-index:3;
+}
+.hero-service-links a{
+  display:inline-flex;
+  align-items:center;
+  font-family:"Montserrat",sans-serif;
+  font-size:clamp(.92rem,1.45vw,1.16rem);
+  line-height:1.1;
+  font-weight:800;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  color:#f3e7d8;
+  cursor:pointer;
+  transition:color .22s ease, transform .22s ease, opacity .22s ease;
+}
+.hero-service-links a::after{
+  content:"↘";
+  margin-left:8px;
+  font-size:.72em;
+  font-weight:600;
+  opacity:.62;
+}
+.hero-service-links a:hover,
+.hero-service-links a:focus-visible{
+  color:#fff;
+  transform:translateY(-2px);
+  outline:none;
+}
+#service-construction,
+#service-renovation,
+#service-project{
+  scroll-margin-top:110px;
+}
+@media(max-width:720px){
+  .hero-service-links{
+    gap:11px 18px;
+    margin-bottom:20px;
+  }
+  .hero-service-links a{
+    font-size:.86rem;
+    letter-spacing:.075em;
+  }
+}
+</style>
 </head>
 
 <body>
@@ -6250,8 +6305,11 @@ header.site-header .nav > *{
     <section class="hero" id="home">
       <div class="container">
         <div class="hero-inner">
-          <div class="eyebrow">Construction · Renovation · Project Delivery</div>
-<h1>Built with <span>purpose.</span><br>Delivered with precision.</h1>
+          <nav class="hero-service-links" aria-label="Service categories">
+            <a href="#service-construction">Construction</a>
+            <a href="#service-renovation">Renovation</a>
+            <a href="#service-project">Project</a>
+          </nav>
           <p class="hero-copy">
             KLConstruction Sdn Bhd provides dependable construction and project solutions for
             residential, commercial and industrial developments across Malaysia.
@@ -6475,7 +6533,7 @@ header.site-header .nav > *{
         </div>
 
         <div class="services-grid">
-          <article class="service-card reveal">
+          <article class="service-card reveal" id="service-construction">
             <div class="service-num">01 / Construction</div>
             <div class="service-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>
@@ -6484,7 +6542,7 @@ header.site-header .nav > *{
             <p>Residential, commercial and industrial construction with coordinated site execution.</p>
           </article>
 
-          <article class="service-card reveal">
+          <article class="service-card reveal" id="service-renovation">
             <div class="service-num">02 / Renovation</div>
             <div class="service-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M14 7l3-3 3 3-3 3M4 20l8-8M7 17l-3-3 7-7 3 3"/></svg>
@@ -6493,8 +6551,8 @@ header.site-header .nav > *{
             <p>Practical improvement works, refurbishment and upgrading for existing properties.</p>
           </article>
 
-          <article class="service-card reveal">
-            <div class="service-num">03 / Management</div>
+          <article class="service-card reveal" id="service-project">
+            <div class="service-num">03 / Project</div>
             <div class="service-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
             </div>
@@ -7019,8 +7077,8 @@ header.site-header .nav > *{
     }
 
     if(c.hero){
-      setText('.hero .eyebrow',c.hero.eyebrow);
-      setHTML('.hero h1',c.hero.titleHtml);
+      // Hero service category links are fixed navigation; do not overwrite from CMS.
+      // Hero headline removed by client request.
       setText('.hero .hero-copy',c.hero.description);
       const hero=q('.hero');
       if(hero && c.hero.image){
