@@ -2,727 +2,411 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // =====================================================
-    // JSON RESPONSE HELPER
-    // =====================================================
-    const json = (data, status = 200) => {
-      return new Response(JSON.stringify(data), {
+    const json = (data, status = 200) =>
+      new Response(JSON.stringify(data), {
         status,
         headers: {
-          "content-type": "application/json; charset=UTF-8",
-          "cache-control": "no-store"
-        }
+          "content-type": "application/json;charset=UTF-8",
+          "cache-control": "no-store",
+        },
       });
-    };
 
-
-    // =====================================================
+    // =========================================================
     // ADMIN LOGIN
-    // =====================================================
-    if (
-      url.pathname === "/api/auth" &&
-      request.method === "POST"
-    ) {
-      try {
-        let token = "";
-
-        // ---------------------------------------------
-        // METHOD 1:
-        // Get password from Authorization header
-        //
-        // Authorization: Bearer PASSWORD
-        // ---------------------------------------------
-        const authorization =
-          request.headers.get("Authorization") || "";
-
-        if (authorization.startsWith("Bearer ")) {
-          token = authorization
-            .slice(7)
-            .trim();
-        }
-
-
-        // ---------------------------------------------
-        // METHOD 2:
-        // JSON body fallback
-        //
-        // {
-        //   "password": "PASSWORD"
-        // }
-        // ---------------------------------------------
-        if (!token) {
-          try {
-            const body = await request.json();
-
-            token =
-              body?.token ||
-              body?.password ||
-              "";
-          } catch {
-            // No JSON body.
-          }
-        }
-
-
-        // ---------------------------------------------
-        // Make sure ADMIN_TOKEN exists
-        // ---------------------------------------------
-        if (!env.ADMIN_TOKEN) {
-          return json(
-            {
-              ok: false,
-              error:
-                "Admin authentication is not configured."
-            },
-            500
-          );
-        }
-
-
-        // ---------------------------------------------
-        // Check password
-        // ---------------------------------------------
-        if (
-          !token ||
-          token !== env.ADMIN_TOKEN
-        ) {
-          return json(
-            {
-              ok: false,
-              error:
-                "Incorrect password."
-            },
-            401
-          );
-        }
-
-
-        // ---------------------------------------------
-        // Login successful
-        // ---------------------------------------------
-        return json({
-          ok: true,
-          message:
-            "Login successful."
-        });
-
-      } catch (error) {
-        return json(
-          {
-            ok: false,
-            error:
-              "Unable to verify login.",
-            details:
-              error.message
-          },
-          500
-        );
-      }
-    }
-
-
-    // =====================================================
-    // GET WEBSITE CONTENT
-    // =====================================================
-    if (
-      url.pathname === "/api/content" &&
-      request.method === "GET"
-    ) {
-      try {
-
-        if (!env.DB) {
-          return json(
-            {
-              error:
-                "Database is not configured."
-            },
-            500
-          );
-        }
-
-
-        const row =
-          await env.DB
-            .prepare(
-              `
-              SELECT value
-              FROM site_content
-              WHERE key = ?
-              `
-            )
-            .bind("main")
-            .first();
-
-
-        // No saved content yet
-        if (!row) {
-          return json({
-            content: null
-          });
-        }
-
-
-        // Parse saved JSON
-        let content = null;
-
-        try {
-          content =
-            JSON.parse(row.value);
-        } catch {
-          return json(
-            {
-              error:
-                "Saved website content is invalid."
-            },
-            500
-          );
-        }
-
-
-        return json({
-          content
-        });
-
-      } catch (error) {
-        return json(
-          {
-            error:
-              "Unable to load website content.",
-            details:
-              error.message
-          },
-          500
-        );
-      }
-    }
-
-
-    // =====================================================
-    // SAVE / PUBLISH WEBSITE CONTENT
-    // =====================================================
-    if (
-      url.pathname === "/api/content" &&
-      request.method === "PUT"
-    ) {
-
-      // ---------------------------------------------
-      // Require admin login
-      // ---------------------------------------------
+    // =========================================================
+    if (url.pathname === "/api/auth" && request.method === "POST") {
       if (!isAdmin(request, env)) {
         return json(
           {
-            error:
-              "Unauthorized"
+            ok: false,
+            error: "Unauthorized",
           },
           401
         );
       }
 
+      return json({
+        ok: true,
+      });
+    }
 
-      // ---------------------------------------------
-      // Check D1
-      // ---------------------------------------------
-      if (!env.DB) {
+    // =========================================================
+    // LOAD WEBSITE CONTENT
+    // =========================================================
+    if (url.pathname === "/api/content" && request.method === "GET") {
+      try {
+        const row = await env.DB
+          .prepare("SELECT value FROM site_content WHERE key = ?")
+          .bind("main")
+          .first();
+
+        return json({
+          content: row ? JSON.parse(row.value) : null,
+        });
+      } catch (error) {
         return json(
           {
-            error:
-              "Database is not configured."
+            error: "Unable to load website content",
+            details: error.message,
           },
           500
         );
       }
+    }
 
+    // =========================================================
+    // SAVE / PUBLISH WEBSITE CONTENT
+    // =========================================================
+    if (url.pathname === "/api/content" && request.method === "PUT") {
+      if (!isAdmin(request, env)) {
+        return json(
+          {
+            error: "Unauthorized",
+          },
+          401
+        );
+      }
 
-      // ---------------------------------------------
-      // Read content
-      // ---------------------------------------------
       let body;
 
       try {
-        body =
-          await request.json();
+        body = await request.json();
       } catch {
         return json(
           {
-            error:
-              "Invalid content data."
+            error: "Invalid JSON",
           },
           400
         );
       }
 
-
-      // ---------------------------------------------
-      // Validate content
-      // ---------------------------------------------
-      if (
-        !body ||
-        typeof body.content !== "object" ||
-        body.content === null ||
-        Array.isArray(body.content)
-      ) {
+      if (!body || typeof body.content !== "object") {
         return json(
           {
-            error:
-              "Missing website content."
+            error: "Missing content",
           },
           400
         );
       }
 
-
-      // ---------------------------------------------
-      // Save into D1
-      // ---------------------------------------------
       try {
-
         await env.DB
-          .prepare(
-            `
+          .prepare(`
             INSERT INTO site_content (
               key,
               value,
               updated_at
             )
+            VALUES (?, ?, datetime('now'))
 
-            VALUES (
-              ?,
-              ?,
-              datetime('now')
-            )
-
-            ON CONFLICT(key)
-
-            DO UPDATE SET
+            ON CONFLICT(key) DO UPDATE SET
               value = excluded.value,
               updated_at = datetime('now')
-            `
-          )
-          .bind(
-            "main",
-            JSON.stringify(
-              body.content
-            )
-          )
+          `)
+          .bind("main", JSON.stringify(body.content))
           .run();
-
 
         return json({
           ok: true,
-          message:
-            "Website updated successfully."
+          message: "Published successfully",
         });
-
       } catch (error) {
         return json(
           {
-            error:
-              "Unable to save website content.",
-            details:
-              error.message
+            error: "Unable to publish content",
+            details: error.message,
           },
           500
         );
       }
     }
 
+    // =========================================================
+    // NEWS ARTICLE VIEW COUNTER
+    //
+    // Frontend localStorage controls whether the SAME
+    // browser/device has already counted the article.
+    //
+    // When a NEW browser/device opens the article:
+    // Frontend -> POST /api/news-view
+    // Worker -> +1
+    // Worker -> Save new total into D1
+    //
+    // Admin then reads the same total from D1.
+    // =========================================================
+    if (
+      url.pathname === "/api/news-view" &&
+      request.method === "POST"
+    ) {
+      try {
+        const body = await request.json();
 
-    // =====================================================
+        const index = Number(body?.index);
+
+        if (
+          !Number.isInteger(index) ||
+          index < 0
+        ) {
+          return json(
+            {
+              error: "Invalid article",
+            },
+            400
+          );
+        }
+
+        // Get current website content
+        const row = await env.DB
+          .prepare(
+            "SELECT value FROM site_content WHERE key = ?"
+          )
+          .bind("main")
+          .first();
+
+        if (!row) {
+          return json(
+            {
+              error: "Content not found",
+            },
+            404
+          );
+        }
+
+        const content = JSON.parse(row.value);
+
+        // Make sure article exists
+        if (
+          !Array.isArray(content.news) ||
+          !content.news[index]
+        ) {
+          return json(
+            {
+              error: "Article not found",
+            },
+            404
+          );
+        }
+
+        // Current views
+        const currentViews = Number(
+          content.news[index].views || 0
+        );
+
+        // Add one new view
+        const newViews = currentViews + 1;
+
+        content.news[index].views = newViews;
+
+        // Save new total back into D1
+        await env.DB
+          .prepare(`
+            UPDATE site_content
+            SET
+              value = ?,
+              updated_at = datetime('now')
+            WHERE key = ?
+          `)
+          .bind(
+            JSON.stringify(content),
+            "main"
+          )
+          .run();
+
+        return json({
+          ok: true,
+          views: newViews,
+        });
+      } catch (error) {
+        return json(
+          {
+            error: "Unable to record view",
+            details: error.message,
+          },
+          500
+        );
+      }
+    }
+
+    // =========================================================
     // IMAGE UPLOAD
-    // =====================================================
+    // =========================================================
     if (
       url.pathname === "/api/upload" &&
       request.method === "POST"
     ) {
-
-      // ---------------------------------------------
-      // Require admin login
-      // ---------------------------------------------
       if (!isAdmin(request, env)) {
         return json(
           {
-            error:
-              "Unauthorized"
+            error: "Unauthorized",
           },
           401
         );
       }
 
-
-      // ---------------------------------------------
-      // Check R2 binding
-      // ---------------------------------------------
       if (!env.MEDIA_BUCKET) {
         return json(
           {
-            error:
-              "Image storage is not configured."
+            error: "Image storage is not configured yet",
           },
           503
         );
       }
 
-
       try {
+        const form = await request.formData();
 
-        // -------------------------------------------
-        // Read uploaded image
-        // -------------------------------------------
-        const form =
-          await request.formData();
+        const file = form.get("file");
 
-        const file =
-          form.get("file");
-
-
-        // -------------------------------------------
-        // Make sure file exists
-        // -------------------------------------------
         if (!(file instanceof File)) {
           return json(
             {
-              error:
-                "Please select an image."
+              error: "No image selected",
             },
             400
           );
         }
 
-
-        // -------------------------------------------
-        // Only allow images
-        // -------------------------------------------
-        if (
-          !file.type ||
-          !file.type.startsWith("image/")
-        ) {
+        if (!file.type.startsWith("image/")) {
           return json(
             {
-              error:
-                "Only image files are allowed."
+              error: "Images only",
             },
             400
           );
         }
 
-
-        // -------------------------------------------
-        // Safety limit: 8 MB
-        //
-        // admin.html already compresses the image
-        // BEFORE sending it here.
-        //
-        // This is just an additional protection.
-        // -------------------------------------------
-        const MAX_SIZE =
-          8 * 1024 * 1024;
-
-        if (file.size > MAX_SIZE) {
+        // Maximum 8 MB after frontend processing
+        if (file.size > 8 * 1024 * 1024) {
           return json(
             {
-              error:
-                "Image is too large. Maximum upload size is 8 MB."
+              error: "Image too large. Maximum size is 8 MB.",
             },
             413
           );
         }
 
-
-        // -------------------------------------------
-        // Determine extension
-        // -------------------------------------------
-        let extension = "webp";
-
-        if (
-          file.type === "image/jpeg"
-        ) {
-          extension = "jpg";
-        }
-
-        else if (
-          file.type === "image/png"
-        ) {
-          extension = "png";
-        }
-
-        else if (
-          file.type === "image/webp"
-        ) {
-          extension = "webp";
-        }
-
-        else if (
-          file.type === "image/gif"
-        ) {
-          extension = "gif";
-        }
-
-        else {
-          const originalExtension =
-            file.name
-              ?.split(".")
-              .pop()
-              ?.replace(
-                /[^a-zA-Z0-9]/g,
-                ""
-              )
-              .toLowerCase();
-
-          if (originalExtension) {
-            extension =
-              originalExtension;
-          }
-        }
-
-
-        // -------------------------------------------
-        // Create unique R2 filename
-        //
-        // Example:
-        //
-        // uploads/2026-09-21/123456-uuid.webp
-        // -------------------------------------------
-        const date =
-          new Date()
-            .toISOString()
-            .slice(0, 10);
+        const extension = (
+          file.name.split(".").pop() || "jpg"
+        )
+          .replace(/[^a-z0-9]/gi, "")
+          .toLowerCase();
 
         const key =
-          "uploads/" +
-          date +
-          "/" +
-          Date.now() +
-          "-" +
-          crypto.randomUUID() +
-          "." +
-          extension;
+          `uploads/${Date.now()}-` +
+          `${crypto.randomUUID()}.${extension}`;
 
-
-        // -------------------------------------------
-        // Upload to R2
-        // -------------------------------------------
         await env.MEDIA_BUCKET.put(
           key,
           file.stream(),
           {
             httpMetadata: {
-              contentType:
-                file.type ||
-                "application/octet-stream",
-
+              contentType: file.type,
               cacheControl:
-                "public, max-age=31536000, immutable"
+                "public, max-age=31536000",
             },
-
-            customMetadata: {
-              originalName:
-                file.name ||
-                "uploaded-image"
-            }
           }
         );
 
-
-        // -------------------------------------------
-        // Return image URL
-        // -------------------------------------------
         return json({
           ok: true,
-
-          url:
-            "/media/" +
-            key,
-
-          size:
-            file.size,
-
-          type:
-            file.type
+          url: `/media/${key}`,
         });
-
       } catch (error) {
         return json(
           {
-            error:
-              "Image upload failed.",
-            details:
-              error.message
+            error: "Image upload failed",
+            details: error.message,
           },
           500
         );
       }
     }
 
-
-    // =====================================================
+    // =========================================================
     // SERVE IMAGES FROM R2
-    // =====================================================
+    // =========================================================
     if (
       url.pathname.startsWith("/media/") &&
       request.method === "GET"
     ) {
-
-      // ---------------------------------------------
-      // Check R2
-      // ---------------------------------------------
       if (!env.MEDIA_BUCKET) {
         return new Response(
-          "Image storage is not configured.",
+          "Image storage not configured",
           {
-            status: 503
+            status: 503,
           }
         );
       }
 
+      const key = url.pathname.slice(
+        "/media/".length
+      );
 
-      try {
+      const object =
+        await env.MEDIA_BUCKET.get(key);
 
-        // -------------------------------------------
-        // Get R2 key
-        // -------------------------------------------
-        const key =
-          url.pathname.slice(
-            "/media/".length
-          );
-
-
-        if (!key) {
-          return new Response(
-            "Image not found.",
-            {
-              status: 404
-            }
-          );
-        }
-
-
-        // -------------------------------------------
-        // Get image from R2
-        // -------------------------------------------
-        const object =
-          await env.MEDIA_BUCKET.get(
-            key
-          );
-
-
-        if (!object) {
-          return new Response(
-            "Image not found.",
-            {
-              status: 404
-            }
-          );
-        }
-
-
-        // -------------------------------------------
-        // Image headers
-        // -------------------------------------------
-        const headers =
-          new Headers();
-
-        object.writeHttpMetadata(
-          headers
-        );
-
-
-        if (object.httpEtag) {
-          headers.set(
-            "etag",
-            object.httpEtag
-          );
-        }
-
-
-        headers.set(
-          "cache-control",
-          "public, max-age=31536000, immutable"
-        );
-
-
-        // -------------------------------------------
-        // Return image
-        // -------------------------------------------
+      if (!object) {
         return new Response(
-          object.body,
+          "Image not found",
           {
-            headers
-          }
-        );
-
-      } catch (error) {
-        return new Response(
-          "Unable to load image.",
-          {
-            status: 500
+            status: 404,
           }
         );
       }
-    }
 
+      const headers = new Headers();
 
-    // =====================================================
-    // STATIC WEBSITE
-    // =====================================================
-    //
-    // Handles:
-    //
-    // /
-    // index.html
-    // admin.html
-    // assets
-    // CSS
-    // JS
-    // existing website images
-    //
-    // =====================================================
-    if (env.ASSETS) {
-      return env.ASSETS.fetch(
-        request
+      object.writeHttpMetadata(headers);
+
+      headers.set(
+        "etag",
+        object.httpEtag
+      );
+
+      headers.set(
+        "cache-control",
+        "public, max-age=31536000"
+      );
+
+      return new Response(
+        object.body,
+        {
+          headers,
+        }
       );
     }
 
+    // =========================================================
+    // WEBSITE FILES
+    // index.html
+    // admin.html
+    // assets
+    // etc.
+    // =========================================================
+    if (env.ASSETS) {
+      return env.ASSETS.fetch(request);
+    }
 
-    // =====================================================
-    // FALLBACK
-    // =====================================================
     return new Response(
       "Not found",
       {
-        status: 404
+        status: 404,
       }
     );
-  }
+  },
 };
 
 
-// =========================================================
-// ADMIN AUTHORIZATION CHECK
-// =========================================================
+// =============================================================
+// ADMIN AUTHENTICATION
+// =============================================================
 function isAdmin(request, env) {
-
-  // ADMIN_TOKEN must exist
-  if (!env.ADMIN_TOKEN) {
-    return false;
-  }
-
-
-  // Get Authorization header
   const authorization =
-    request.headers.get(
-      "Authorization"
-    ) || "";
-
-
-  // Expected:
-  //
-  // Authorization: Bearer PASSWORD
-  //
-  const expected =
-    `Bearer ${env.ADMIN_TOKEN}`;
-
+    request.headers.get("Authorization") || "";
 
   return (
-    authorization === expected
+    Boolean(env.ADMIN_TOKEN) &&
+    authorization ===
+      `Bearer ${env.ADMIN_TOKEN}`
   );
 }
