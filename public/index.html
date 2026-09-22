@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3109,6 +3110,7 @@ header.site-header,
 .news-modal-body h3{font-family:"Montserrat",sans-serif;font-size:clamp(1.7rem,3vw,2.45rem);line-height:1.12;margin:0 0 18px;color:#151515}
 .news-modal-meta{display:flex;align-items:center;gap:8px;color:#8a6a34;font-weight:800;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:24px}
 .news-modal-body p{color:#56606a;margin:0 0 18px;line-height:1.82;font-size:.98rem}
+.news-modal-description{color:#6b5a49!important;font-size:1.02rem!important;font-weight:600;line-height:1.7!important;margin:-4px 0 22px!important}
 body.news-modal-lock{overflow:hidden}
 
 /* keep the detailed project presentation consistent on desktop */
@@ -6282,6 +6284,12 @@ header.site-header .nav > *{
   }
 }
 </style>
+
+<style id="real-ui-arrow-icons">
+.ui-arrow-icon{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.arrow-btn,.mobile-carousel-btn,.news-arrow{display:inline-flex!important;align-items:center!important;justify-content:center!important}
+@media(max-width:700px){.ui-arrow-icon{width:19px;height:19px}}
+</style>
 </head>
 
 <body>
@@ -6406,8 +6414,8 @@ header.site-header .nav > *{
               <div class="progress"><span id="progressBar"></span></div>
             </div>
             <div class="carousel-controls">
-              <button class="arrow-btn" id="prevBtn" aria-label="Previous projects">←</button>
-              <button class="arrow-btn" id="nextBtn" aria-label="Next projects">→</button>
+              <button class="arrow-btn" id="prevBtn" aria-label="Previous projects"><svg class="ui-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+              <button class="arrow-btn" id="nextBtn" aria-label="Next projects"><svg class="ui-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
             </div>
           </div>
         </div>
@@ -6477,8 +6485,8 @@ header.site-header .nav > *{
 <button class="mobile-carousel-dot" aria-label="Go to project 6" data-index="5"></button>
             </div>
             <div class="mobile-carousel-arrows">
-              <button class="mobile-carousel-btn" id="mobileProjectPrev" aria-label="Previous project">←</button>
-              <button class="mobile-carousel-btn" id="mobileProjectNext" aria-label="Next project">→</button>
+              <button class="mobile-carousel-btn" id="mobileProjectPrev" aria-label="Previous project"><svg class="ui-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+              <button class="mobile-carousel-btn" id="mobileProjectNext" aria-label="Next project"><svg class="ui-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
             </div>
           </div>
         </div>
@@ -6662,8 +6670,8 @@ header.site-header .nav > *{
         <div class="news-more-row reveal">
           <h3>More News &amp; Updates</h3>
           <div class="news-arrows">
-            <button class="news-arrow" id="newsPrev" type="button" aria-label="Previous news">←</button>
-            <button class="news-arrow" id="newsNext" type="button" aria-label="Next news">→</button>
+            <button class="news-arrow" id="newsPrev" type="button" aria-label="Previous news"><svg class="ui-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button class="news-arrow" id="newsNext" type="button" aria-label="Next news"><svg class="ui-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
           </div>
         </div>
         <div class="news-small-viewport reveal">
@@ -6681,6 +6689,7 @@ header.site-header .nav > *{
         <div class="news-modal-body">
           <div class="news-modal-meta" id="newsModalMeta"></div>
           <h3 id="newsModalTitle"></h3>
+          <p class="news-modal-description" id="newsModalDescription"></p>
           <div id="newsModalArticle"></div>
         </div>
       </div>
@@ -6728,7 +6737,7 @@ header.site-header .nav > *{
               referrerpolicy="no-referrer-when-downgrade"
               src="https://www.google.com/maps?q=Klang%2C%20Selangor%2C%20Malaysia&output=embed">
             </iframe>
-            <div class="map-label"><span>Sample Location</span><strong>Klang, Selangor</strong></div>
+            <div class="map-label"><strong>Klang, Selangor</strong></div>
           </div>
         </div>
       </div>
@@ -6975,67 +6984,83 @@ header.site-header .nav > *{
 (function(){
   const eyeIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.7"></circle></svg>';
   const news = [
-    {id:'commercial-milestone',title:'Commercial Development Reaches a Key Coordination Milestone',views:331,img:'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=92'},
-    {id:'structural-progress',title:'Structural Works Move Forward with Safety and Quality in Focus',views:242,img:'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=92'},
-    {id:'industrial-progress',title:'Industrial Site Progress Shows Strong Coordination Across Trades',views:200,img:'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1800&q=92'},
-    {id:'office-fitout',title:'Office Fit-Out Takes Shape Through Careful Planning and Finishing',views:218,img:'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1800&q=92'},
-    {id:'material-checks',title:'Material Checks Help Protect Build Quality on Site',views:187,img:'https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?auto=format&fit=crop&w=1600&q=92'},
-    {id:'residential-detail',title:'Residential Build Focuses on Practical Details and Lasting Quality',views:164,img:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=92'},
-    {id:'civil-access',title:'Site and Civil Works Improve Access and Project Readiness',views:153,img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=92'},
-    {id:'site-team',title:'Clear Site Communication Keeps Multiple Workstreams Moving',views:146,img:'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1600&q=92'},
-    {id:'planning-review',title:'Planning Reviews Help Teams Identify Issues Before Site Work Begins',views:139,img:'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1600&q=92'},
-    {id:'handover-quality',title:'Final Quality Reviews Support a Smoother Project Handover',views:128,img:'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1600&q=92'}
+    {title:'Commercial Development Reaches a Key Coordination Milestone',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=92'},
+    {title:'Structural Works Move Forward with Safety and Quality in Focus',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=92'},
+    {title:'Industrial Site Progress Shows Strong Coordination Across Trades',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1541888946425-d81bb19240f5e?auto=format&fit=crop&w=1800&q=92'},
+    {title:'Office Fit-Out Takes Shape Through Careful Planning and Finishing',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1800&q=92'},
+    {title:'Material Checks Help Protect Build Quality on Site',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?auto=format&fit=crop&w=1600&q=92'},
+    {title:'Residential Build Focuses on Practical Details and Lasting Quality',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=92'},
+    {title:'Site and Civil Works Improve Access and Project Readiness',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=92'},
+    {title:'Clear Site Communication Keeps Multiple Workstreams Moving',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1600&q=92'},
+    {title:'Planning Reviews Help Teams Identify Issues Before Site Work Begins',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1600&q=92'},
+    {title:'Final Quality Reviews Support a Smoother Project Handover',description:'',body:'',views:0,showViews:true,img:'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1600&q=92'}
   ];
+
+  const legacyBody = [
+    'Every construction project reaches points where good coordination becomes just as important as physical progress. At this stage, the work is not only about completing visible items; it is also about making sure information, sequencing, access, safety requirements and workmanship standards continue to align.',
+    'A structured review normally begins with the latest drawings, site conditions and the work sequence. Teams compare planned activities against actual progress and identify areas where one trade may affect another.',
+    'Quality checks form another important part of the process. Rather than waiting until the end of a project, inspections are more useful when they are carried out throughout the work.',
+    'Safety and housekeeping also remain part of day-to-day delivery. Clear access routes, organised material storage and well-planned work areas make the site easier to manage.',
+    'Good project delivery is therefore a combination of planning, technical coordination and consistent follow-through.',
+    'The objective is straightforward: complete each stage with enough clarity that the next team can begin without avoidable uncertainty.'
+  ].join('\n\n');
+  news.forEach(n=>{ if(!n.body) n.body=legacyBody; });
 
   window.__KLC_NEWS = news;
-  const articleParagraphs = [
-    'Every construction project reaches points where good coordination becomes just as important as physical progress. At this stage, the work is not only about completing visible items; it is also about making sure information, sequencing, access, safety requirements and workmanship standards continue to align. For KLConstruction, that means reviewing what has been completed, what is coming next and whether any interface between trades needs to be resolved before it affects the programme.',
-    'A structured review normally begins with the latest drawings, site conditions and the work sequence. Teams compare planned activities against actual progress, verify access requirements and identify areas where one trade may affect another. This is especially important around structural openings, M&E routes, finishes, temporary works and handover zones. Resolving those items early helps reduce unnecessary rework and keeps the next phase more predictable.',
-    'Quality checks form another important part of the process. Rather than waiting until the end of a project, inspections are more useful when they are carried out throughout the work. Materials can be checked before installation, completed areas can be reviewed before they are covered, and workmanship can be assessed against the agreed details. This approach helps the team correct small issues while they are still easy to manage.',
-    'Safety and housekeeping also remain part of day-to-day delivery. Clear access routes, organised material storage and well-planned work areas make the site easier to manage and reduce unnecessary disruption between teams. When several work activities are happening at the same time, communication becomes particularly important. Short coordination discussions and clear responsibilities help everyone understand what can proceed safely and what must wait.',
-    'Good project delivery is therefore a combination of planning, technical coordination and consistent follow-through. Visible progress matters, but the quality of the decisions behind that progress matters just as much. By keeping information current and reviewing the work in manageable stages, the project team can maintain better control over quality, programme and site conditions.',
-    'The objective is straightforward: complete each stage with enough clarity that the next team can begin without avoidable uncertainty. That discipline supports a smoother construction process and a stronger final result. As the project continues, the same checks are repeated at the appropriate stages so that quality, safety and coordination remain part of the work from early construction through final handover.'
-  ];
-
-  window.__KLC_ARTICLE_PARAGRAPHS = articleParagraphs;
   const feature = document.getElementById('newsFeatureGrid');
   const track = document.getElementById('newsSmallTrack');
   const modal = document.getElementById('newsModal');
   if(!feature || !track || !modal) return;
 
-  function countFor(item){
-    const added = localStorage.getItem('klc_news_seen_'+item.id)==='1' ? 1 : 0;
-    return item.views + added;
-  }
-  function card(item,small){
+  const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const bodyHTML = text => String(text||'').trim().split(/\n\s*\n/).filter(Boolean).map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');
+
+  function card(item,index,small){
     const b=document.createElement('button');
     b.type='button';
     b.className='news-card '+(small?'news-small-card':'news-feature-card');
-    b.dataset.news=item.id;
-    b.innerHTML='<img src="'+item.img+'" alt="'+item.title.replace(/"/g,'&quot;')+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">'+
-      '<span class="news-view" data-view="'+item.id+'">'+eyeIcon+'<span>'+countFor(item)+'</span></span>'+
-      '<span class="news-card-copy"><h3>'+item.title+'</h3></span>';
-    b.addEventListener('click',()=>openNews(item));
+    b.dataset.newsIndex=String(index);
+    const viewBadge = item.showViews!==false ? '<span class="news-view" data-view-index="'+index+'">'+eyeIcon+'<span>'+Number(item.views||0)+'</span></span>' : '';
+    b.innerHTML='<img src="'+esc(item.img)+'" alt="'+esc(item.title)+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">'+
+      viewBadge+'<span class="news-card-copy"><h3>'+esc(item.title)+'</h3></span>';
+    b.addEventListener('click',()=>openNews(item,index));
     return b;
   }
-  news.slice(0,4).forEach(n=>feature.appendChild(card(n,false)));
-  news.slice(4).forEach(n=>track.appendChild(card(n,true)));
 
-  function updateViews(item){
-    const key='klc_news_seen_'+item.id;
-    if(localStorage.getItem(key)!=='1') localStorage.setItem(key,'1');
-    document.querySelectorAll('[data-view="'+item.id+'"] span').forEach(el=>el.textContent=countFor(item));
-    return countFor(item);
+  function renderNews(){
+    feature.innerHTML=''; track.innerHTML='';
+    news.forEach((n,i)=>{ if(i<4) feature.appendChild(card(n,i,false)); else track.appendChild(card(n,i,true)); });
   }
-  function openNews(item){
-    const v=updateViews(item);
+  window.__KLC_RENDER_NEWS = renderNews;
+  renderNews();
+
+  async function registerView(item,index){
+    const seenKey='klc_news_seen_'+index+'_'+String(item.title||'').slice(0,40);
+    if(localStorage.getItem(seenKey)==='1') return Number(item.views||0);
+    localStorage.setItem(seenKey,'1');
+    try{
+      const r=await fetch('/api/news-view',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({index})});
+      if(r.ok){ const j=await r.json(); if(Number.isFinite(Number(j.views))) item.views=Number(j.views); }
+      else item.views=Number(item.views||0)+1;
+    }catch(e){ item.views=Number(item.views||0)+1; }
+    document.querySelectorAll('[data-view-index="'+index+'"] span').forEach(el=>el.textContent=item.views);
+    return item.views;
+  }
+
+  async function openNews(item,index){
     document.getElementById('newsModalImg').src=item.img;
     document.getElementById('newsModalImg').alt=item.title;
     document.getElementById('newsModalTitle').textContent=item.title;
-    document.getElementById('newsModalMeta').textContent=v+' views';
-    document.getElementById('newsModalArticle').innerHTML=articleParagraphs.map((p,i)=>'<p>'+(i===0?'<strong>'+item.title+'.</strong> ':'')+p+'</p>').join('');
+    const desc=document.getElementById('newsModalDescription');
+    if(desc){ desc.textContent=item.description||''; desc.style.display=item.description?'':'none'; }
+    const meta=document.getElementById('newsModalMeta');
+    if(meta){ meta.style.display=item.showViews===false?'none':'flex'; meta.textContent=item.showViews===false?'':Number(item.views||0)+' views'; }
+    document.getElementById('newsModalArticle').innerHTML=bodyHTML(item.body||'');
     modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('news-modal-lock');
+    const v=await registerView(item,index);
+    if(meta && item.showViews!==false) meta.textContent=v+' views';
   }
+
   function closeNews(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('news-modal-lock')}
   document.getElementById('newsModalClose').addEventListener('click',closeNews);
   modal.addEventListener('click',e=>{if(e.target===modal)closeNews()});
@@ -7074,6 +7099,7 @@ header.site-header .nav > *{
       const md=q('meta[name="description"]'); if(md && c.meta.description) md.content=c.meta.description;
       setText('.header-company-main',c.meta.companyMain);
       setText('.header-company-sub',c.meta.companySub);
+      if(c.meta.logo) setImg('.new-full-logo',c.meta.logo);
     }
 
     if(c.hero){
@@ -7082,7 +7108,8 @@ header.site-header .nav > *{
       setText('.hero .hero-copy',c.hero.description);
       const hero=q('.hero');
       if(hero && c.hero.image){
-        hero.style.backgroundImage=`linear-gradient(90deg,rgba(9,14,20,.82) 0%,rgba(9,14,20,.60) 42%,rgba(9,14,20,.22) 72%,rgba(9,14,20,.35) 100%), url("${c.hero.image.replace(/"/g,'%22')}")`;
+        const safeHero=String(c.hero.image).replace(/"/g,'%22');
+        hero.style.setProperty('background',`linear-gradient(90deg,rgba(9,14,20,.62) 0%,rgba(9,14,20,.42) 42%,rgba(9,14,20,.18) 72%,rgba(9,14,20,.32) 100%), url("${safeHero}") center center / cover no-repeat`,'important');
       }
       const metas=qa('.hero-meta > div');
       if(metas[0] && c.hero.metaLeftHtml) metas[0].innerHTML=c.hero.metaLeftHtml;
@@ -7154,22 +7181,18 @@ header.site-header .nav > *{
     }
 
     if(Array.isArray(c.news) && Array.isArray(window.__KLC_NEWS)){
+      window.__KLC_NEWS.length=0;
       c.news.forEach((n,i)=>{
-        const item=window.__KLC_NEWS[i]; if(!item) return;
-        if(n.title!=null) item.title=n.title;
-        if(n.image) item.img=n.image;
-        qa(`[data-news="${item.id}"]`).forEach(card=>{
-          card.style.display='';
-          const img=card.querySelector('img'); if(img && n.image) img.src=n.image;
-          const h=card.querySelector('h3'); if(h && n.title!=null) h.textContent=n.title;
+        window.__KLC_NEWS.push({
+          title:n.title||'Untitled news',
+          description:n.description||'',
+          body:n.body||(Array.isArray(c.newsArticleParagraphs)?c.newsArticleParagraphs.join('\n\n'):''),
+          views:Number(n.views||0),
+          showViews:n.showViews!==false,
+          img:n.image||''
         });
       });
-      window.__KLC_NEWS.forEach((item,i)=>{
-        if(i>=c.news.length) qa(`[data-news="${item.id}"]`).forEach(card=>card.style.display='none');
-      });
-    }
-    if(Array.isArray(c.newsArticleParagraphs) && Array.isArray(window.__KLC_ARTICLE_PARAGRAPHS)){
-      c.newsArticleParagraphs.forEach((p,i)=>{ if(window.__KLC_ARTICLE_PARAGRAPHS[i]!==undefined && p!=null) window.__KLC_ARTICLE_PARAGRAPHS[i]=p; });
+      if(typeof window.__KLC_RENDER_NEWS==='function') window.__KLC_RENDER_NEWS();
     }
 
     if(c.contact){
@@ -7189,7 +7212,7 @@ header.site-header .nav > *{
         setHref('.wa-float',wa);
       }
       const iframe=q('#contact iframe'); if(iframe && c.contact.mapQuery) iframe.src='https://www.google.com/maps?q='+encodeURIComponent(c.contact.mapQuery)+'&output=embed';
-      const ml=q('#contact .map-label strong'); if(ml && c.contact.mapLabel) ml.textContent=c.contact.mapLabel;
+      const ml=q('#contact .map-label strong'); if(ml) ml.textContent=c.contact.mapLabel||c.contact.mapQuery||'';
     }
 
     if(c.footer){
