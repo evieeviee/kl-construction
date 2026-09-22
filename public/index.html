@@ -7037,14 +7037,19 @@ header.site-header .nav > *{
   async function registerView(item,index){
     const seenKey='klc_news_seen_'+index+'_'+String(item.title||'').slice(0,40);
     if(localStorage.getItem(seenKey)==='1') return Number(item.views||0);
-    localStorage.setItem(seenKey,'1');
     try{
       const r=await fetch('/api/news-view',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({index})});
-      if(r.ok){ const j=await r.json(); if(Number.isFinite(Number(j.views))) item.views=Number(j.views); }
-      else item.views=Number(item.views||0)+1;
-    }catch(e){ item.views=Number(item.views||0)+1; }
+      if(!r.ok) return Number(item.views||0);
+      const j=await r.json();
+      if(Number.isFinite(Number(j.views))){
+        item.views=Number(j.views);
+        localStorage.setItem(seenKey,'1');
+      }
+    }catch(e){
+      return Number(item.views||0);
+    }
     document.querySelectorAll('[data-view-index="'+index+'"] span').forEach(el=>el.textContent=item.views);
-    return item.views;
+    return Number(item.views||0);
   }
 
   async function openNews(item,index){
