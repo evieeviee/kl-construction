@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6295,6 +6288,47 @@ header.site-header .nav > *{
 .ui-arrow-icon{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .arrow-btn,.mobile-carousel-btn,.news-arrow{display:inline-flex!important;align-items:center!important;justify-content:center!important}
 @media(max-width:700px){.ui-arrow-icon{width:19px;height:19px}}
+
+
+    /* ===== ABOUT SECTION: IMAGE REMOVED + LONG-FORM CONTENT SAFE ===== */
+    #about .about-grid{
+      display:block !important;
+      max-width:1080px;
+      margin:0 auto;
+    }
+    #about .about-copy{
+      width:100%;
+      max-width:none;
+      min-width:0;
+    }
+    #about .about-copy .section-title{
+      max-width:980px;
+      overflow-wrap:anywhere;
+      word-break:normal;
+      text-wrap:balance;
+    }
+    #about .about-copy > p{
+      max-width:920px !important;
+      margin-top:20px;
+      font-size:clamp(.98rem,1.05vw,1.08rem);
+      line-height:1.85;
+      overflow-wrap:anywhere;
+      white-space:normal;
+    }
+    #about .mission{
+      max-width:920px;
+      margin-top:34px;
+    }
+    #about .mission p{
+      max-width:none !important;
+      line-height:1.8;
+      overflow-wrap:anywhere;
+    }
+    @media(max-width:760px){
+      #about .about-grid{max-width:100%}
+      #about .about-copy .section-title{text-wrap:wrap}
+      #about .about-copy > p{font-size:.98rem;line-height:1.78}
+    }
 </style>
 </head>
 
@@ -6503,10 +6537,6 @@ header.site-header .nav > *{
     <section id="about">
       <div class="container">
         <div class="about-grid">
-          <div class="about-image reveal">
-            <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=84" alt="KLConstruction project site">
-          </div>
-
           <div class="about-copy reveal">
             <div class="section-kicker">About KLConstruction</div>
             <h2 class="section-title">Reliable construction.<br>Clear project delivery.</h2>
@@ -7155,7 +7185,6 @@ header.site-header .nav > *{
     }
 
     if(c.about){
-      setImg('#about .about-image img',c.about.image);
       setText('#about .section-kicker',c.about.kicker);
       setHTML('#about .section-title',c.about.titleHtml);
       const paras=qa('#about .about-copy > p');
