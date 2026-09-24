@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3105,6 +3106,8 @@ header.site-header,
 .news-modal-meta{display:flex;align-items:center;gap:8px;color:#8a6a34;font-weight:800;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:24px}
 .news-modal-body p{color:#56606a;margin:0 0 18px;line-height:1.82;font-size:.98rem}
 .news-modal-description{color:#6b5a49!important;font-size:1.02rem!important;font-weight:600;line-height:1.7!important;margin:-4px 0 22px!important}
+.news-modal-video{width:100%;margin:0 0 30px;border-radius:18px;overflow:hidden;background:#0b0b0b;box-shadow:0 14px 35px rgba(0,0,0,.12)}
+.news-modal-video iframe{display:block;width:100%;aspect-ratio:16/9;height:auto;border:0}
 body.news-modal-lock{overflow:hidden}
 
 /* keep the detailed project presentation consistent on desktop */
@@ -3133,6 +3136,7 @@ body.news-modal-lock{overflow:hidden}
   .news-modal-panel{border-radius:18px}
   .news-modal-image{height:230px}
   .news-modal-body{padding:24px 20px 30px}
+  .news-modal-video{margin:0 0 24px;border-radius:14px}
 }
 
 </style>
@@ -6726,6 +6730,7 @@ header.site-header .nav > *{
           <div class="news-modal-meta" id="newsModalMeta"></div>
           <h3 id="newsModalTitle"></h3>
           <p class="news-modal-description" id="newsModalDescription"></p>
+          <div class="news-modal-video" id="newsModalVideo" style="display:none"></div>
           <div id="newsModalArticle"></div>
         </div>
       </div>
@@ -7088,14 +7093,46 @@ header.site-header .nav > *{
     return Number(item.views||0);
   }
 
+  function getYouTubeEmbedUrl(url){
+    if(!url) return '';
+    try{
+      const value=String(url).trim();
+      if(!value) return '';
+      const parsed=new URL(value);
+      let id='';
+      if(parsed.hostname==='www.youtube.com'||parsed.hostname==='youtube.com'||parsed.hostname==='m.youtube.com'){
+        if(parsed.pathname==='/watch') id=parsed.searchParams.get('v')||'';
+        else if(parsed.pathname.startsWith('/shorts/')) id=parsed.pathname.split('/shorts/')[1]?.split('/')[0]||'';
+        else if(parsed.pathname.startsWith('/embed/')) id=parsed.pathname.split('/embed/')[1]?.split('/')[0]||'';
+      }else if(parsed.hostname==='youtu.be'){
+        id=parsed.pathname.replace(/^\/+/, '').split('/')[0]||'';
+      }
+      id=id.replace(/[^a-zA-Z0-9_-]/g,'');
+      return id?`https://www.youtube.com/embed/${id}?rel=0`:'';
+    }catch(e){ return ''; }
+  }
+
   async function openNews(item,index){
-    document.getElementById('newsModalImg').src=item.img;
-    document.getElementById('newsModalImg').alt=item.title;
-    document.getElementById('newsModalTitle').textContent=item.title;
+    document.getElementById('newsModalImg').src=item.img||'';
+    document.getElementById('newsModalImg').alt=item.title||'';
+    document.getElementById('newsModalTitle').textContent=item.title||'';
     const desc=document.getElementById('newsModalDescription');
     if(desc){ desc.textContent=item.description||''; desc.style.display=item.description?'':'none'; }
     const meta=document.getElementById('newsModalMeta');
     if(meta){ meta.style.display=item.showViews===false?'none':'flex'; meta.textContent=item.showViews===false?'':Number(item.views||0)+' views'; }
+
+    const videoWrap=document.getElementById('newsModalVideo');
+    if(videoWrap){
+      const embedUrl=getYouTubeEmbedUrl(item.videoUrl||'');
+      if(embedUrl){
+        videoWrap.innerHTML='<iframe src="'+esc(embedUrl)+'" title="'+esc(item.title||'News video')+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+        videoWrap.style.display='block';
+      }else{
+        videoWrap.innerHTML='';
+        videoWrap.style.display='none';
+      }
+    }
+
     document.getElementById('newsModalArticle').innerHTML=bodyHTML(item.body||'');
     modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('news-modal-lock');
     const v=await registerView(item,index);
@@ -7229,7 +7266,8 @@ header.site-header .nav > *{
           body:n.body||(Array.isArray(c.newsArticleParagraphs)?c.newsArticleParagraphs.join('\n\n'):''),
           views:Number(n.views||0),
           showViews:n.showViews!==false,
-          img:n.image||''
+          img:n.image||'',
+          videoUrl:n.videoUrl||''
         });
       });
       if(typeof window.__KLC_RENDER_NEWS==='function') window.__KLC_RENDER_NEWS();
