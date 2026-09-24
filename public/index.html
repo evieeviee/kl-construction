@@ -6334,6 +6334,13 @@ header.site-header .nav > *{
       #about .about-copy > p{font-size:.98rem;line-height:1.78}
     }
 </style>
+<style>
+.news-modal-banner-video{position:absolute;inset:0;background:#000;z-index:1}
+.news-modal-banner-video iframe{display:block;width:100%;height:100%;border:0}
+.news-modal-image.video-mode{background:#000}
+.news-modal-image.video-mode>img{display:none}
+.news-modal-image.video-mode .news-modal-close{z-index:3}
+</style>
 </head>
 
 <body>
@@ -6722,15 +6729,15 @@ header.site-header .nav > *{
 
     <div class="news-modal" id="newsModal" aria-hidden="true">
       <div class="news-modal-panel" role="dialog" aria-modal="true" aria-labelledby="newsModalTitle">
-        <div class="news-modal-image">
+        <div class="news-modal-image" id="newsModalMedia">
           <img id="newsModalImg" alt="">
+          <div class="news-modal-banner-video" id="newsModalVideo" style="display:none"></div>
           <button class="news-modal-close" id="newsModalClose" type="button" aria-label="Close">×</button>
         </div>
         <div class="news-modal-body">
           <div class="news-modal-meta" id="newsModalMeta"></div>
           <h3 id="newsModalTitle"></h3>
           <p class="news-modal-description" id="newsModalDescription"></p>
-          <div class="news-modal-video" id="newsModalVideo" style="display:none"></div>
           <div id="newsModalArticle"></div>
         </div>
       </div>
@@ -7113,25 +7120,34 @@ header.site-header .nav > *{
   }
 
   async function openNews(item,index){
-    document.getElementById('newsModalImg').src=item.img||'';
-    document.getElementById('newsModalImg').alt=item.title||'';
+    const mediaBox=document.getElementById('newsModalMedia');
+    const modalImg=document.getElementById('newsModalImg');
+    const videoWrap=document.getElementById('newsModalVideo');
+    const embedUrl=getYouTubeEmbedUrl(item.videoUrl||'');
+    const useVideo=item.mediaType==='video' && !!embedUrl;
+
+    modalImg.src=item.img||'';
+    modalImg.alt=item.title||'';
+
+    if(useVideo){
+      mediaBox?.classList.add('video-mode');
+      if(videoWrap){
+        videoWrap.innerHTML='<iframe src="'+esc(embedUrl)+'" title="'+esc(item.title||'News video')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+        videoWrap.style.display='block';
+      }
+    }else{
+      mediaBox?.classList.remove('video-mode');
+      if(videoWrap){
+        videoWrap.innerHTML='';
+        videoWrap.style.display='none';
+      }
+    }
+
     document.getElementById('newsModalTitle').textContent=item.title||'';
     const desc=document.getElementById('newsModalDescription');
     if(desc){ desc.textContent=item.description||''; desc.style.display=item.description?'':'none'; }
     const meta=document.getElementById('newsModalMeta');
     if(meta){ meta.style.display=item.showViews===false?'none':'flex'; meta.textContent=item.showViews===false?'':Number(item.views||0)+' views'; }
-
-    const videoWrap=document.getElementById('newsModalVideo');
-    if(videoWrap){
-      const embedUrl=getYouTubeEmbedUrl(item.videoUrl||'');
-      if(embedUrl){
-        videoWrap.innerHTML='<iframe src="'+esc(embedUrl)+'" title="'+esc(item.title||'News video')+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
-        videoWrap.style.display='block';
-      }else{
-        videoWrap.innerHTML='';
-        videoWrap.style.display='none';
-      }
-    }
 
     document.getElementById('newsModalArticle').innerHTML=bodyHTML(item.body||'');
     modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('news-modal-lock');
@@ -7139,7 +7155,7 @@ header.site-header .nav > *{
     if(meta && item.showViews!==false) meta.textContent=v+' views';
   }
 
-  function closeNews(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('news-modal-lock')}
+  function closeNews(){const v=document.getElementById('newsModalVideo');if(v){v.innerHTML='';v.style.display='none'}document.getElementById('newsModalMedia')?.classList.remove('video-mode');modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('news-modal-lock')}
   document.getElementById('newsModalClose').addEventListener('click',closeNews);
   modal.addEventListener('click',e=>{if(e.target===modal)closeNews()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeNews()});
@@ -7267,6 +7283,7 @@ header.site-header .nav > *{
           views:Number(n.views||0),
           showViews:n.showViews!==false,
           img:n.image||'',
+          mediaType:n.mediaType==='video'?'video':'image',
           videoUrl:n.videoUrl||''
         });
       });
